@@ -1,0 +1,24 @@
+{
+  "name": "Offset Resizer",
+  "id": "1014239235170552658",
+  "api": "1.0.0",
+  "main": "code.js",
+  "editorType": [
+    "figma"
+  ],
+  "menu": [
+    {
+      "name": "Resize with offset",
+      "command": "resize",
+      "parameterOnly": true,
+      "parameters": [
+        {
+          "name": "Offset Resizer",
+          "key": "offset",
+          "description": "Enter the offset in pixels",
+          "allowFreeform": true
+        }
+      ]
+    }
+  ]
+}

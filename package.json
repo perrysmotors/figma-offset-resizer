@@ -1,0 +1,14 @@
+{
+  "name": "offset-resizer",
+  "version": "1.0.0",
+  "description": "Offset frames, components and component sets by a uniform distance from their contents.",
+  "main": "code.js",
+  "scripts": {
+    "build": "tsc -p tsconfig.json"
+  },
+  "author": "",
+  "license": "",
+  "devDependencies": {
+    "@figma/plugin-typings": "^1.32.0"
+  }
+}
