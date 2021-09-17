@@ -1,15 +1,8 @@
 // This plugin resizes frames or component to a fixed offset from their contents.
 // The 'input' event listens for text change in the Quick Actions box after a plugin is 'Tabbed' into.
-figma.parameters.on("input", (parameters, currentKey, result) => {
-    const query = parameters[currentKey];
-    switch (currentKey) {
-        case "offset":
-            const offsetSizes = ["8", "16", "24", "48", "64"];
-            result.setSuggestions(offsetSizes.filter((s) => s.includes(query)));
-            break;
-        default:
-            return;
-    }
+figma.parameters.on("input", ({ query, result }) => {
+    const offsetSizes = ["8", "16", "24", "48", "64"];
+    result.setSuggestions(offsetSizes.filter((s) => s.includes(query)));
 });
 // When the user presses Enter after inputting all parameters, the 'run' event is fired.
 figma.on("run", ({ parameters }) => {
