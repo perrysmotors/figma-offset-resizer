@@ -16,7 +16,7 @@
           "name": "Offset Resizer",
           "key": "offset",
           "description": "Enter the offset in pixels",
-          "allowFreeform": true
+          "allowFreeform": false
         }
       ]
     }

@@ -1,8 +1,22 @@
 // This plugin resizes frames or component to a fixed offset from their contents.
 // The 'input' event listens for text change in the Quick Actions box after a plugin is 'Tabbed' into.
 figma.parameters.on("input", ({ query, result }) => {
-    const offsetSizes = ["8", "16", "24", "48", "64"];
-    result.setSuggestions(offsetSizes.filter((s) => s.includes(query)));
+    const defaultSizes = ["8", "16", "24", "48", "64"];
+    const selection = getFilteredSelection();
+    if (selection.length === 0) {
+        result.setError("Select at least one frame or component first");
+        return;
+    }
+    // Check the input is valid
+    const integer = parseInt(query);
+    if (query !== "" && (isNaN(integer) || integer < 0)) {
+        result.setError("Try entering a positive number");
+        return;
+    }
+    const suggestions = query === "" || defaultSizes.includes(query)
+        ? defaultSizes
+        : [query, ...defaultSizes];
+    result.setSuggestions(suggestions.filter((s) => s.includes(query)));
 });
 // When the user presses Enter after inputting all parameters, the 'run' event is fired.
 figma.on("run", ({ parameters }) => {
@@ -12,34 +26,25 @@ figma.on("run", ({ parameters }) => {
 });
 function startPluginWithParameters(parameters) {
     const offset = parseInt(parameters["offset"]);
-    // Check the input parameters make sense
-    if (isNaN(offset) || offset < 0) {
-        figma.notify("Try entering a positive number");
+    const selection = getFilteredSelection();
+    selection.forEach((item) => {
+        resizeWithOffset(item, offset);
+    });
+    if (selection.length === 1) {
+        figma.notify("1 layer resized");
     }
     else {
-        // Get the selection of frames
-        const selection = figma.currentPage.selection.filter((node) => (node.type === "FRAME" ||
-            node.type === "COMPONENT" ||
-            node.type === "COMPONENT_SET") &&
-            node.children.length > 0);
-        if (selection.length > 0) {
-            selection.forEach((item) => {
-                resizeWithOffset(item, offset);
-            });
-            if (selection.length === 1) {
-                figma.notify("1 layer resized");
-            }
-            else {
-                figma.notify(`${selection.length} layers resized`);
-            }
-        }
-        else {
-            figma.notify("Select at least one frame or component");
-        }
+        figma.notify(`${selection.length} layers resized`);
     }
     // Make sure to close the plugin when you're done. Otherwise the plugin will
     // keep running, which shows the cancel button at the bottom of the screen.
     figma.closePlugin();
+}
+function getFilteredSelection() {
+    return figma.currentPage.selection.filter((node) => (node.type === "FRAME" ||
+        node.type === "COMPONENT" ||
+        node.type === "COMPONENT_SET") &&
+        node.children.length > 0);
 }
 function resizeWithOffset(parent, offset) {
     const children = parent.children;
