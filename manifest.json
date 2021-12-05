@@ -6,19 +6,13 @@
   "editorType": [
     "figma"
   ],
-  "menu": [
-    {
-      "name": "Resize with offset",
-      "command": "resize",
       "parameterOnly": true,
       "parameters": [
         {
-          "name": "Offset Resizer",
+          "name": "Offset",
           "key": "offset",
           "description": "Enter the offset in pixels",
           "allowFreeform": false
         }
       ]
-    }
-  ]
 }
