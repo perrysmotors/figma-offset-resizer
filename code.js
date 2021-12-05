@@ -4,13 +4,13 @@ figma.parameters.on("input", ({ query, result }) => {
     const defaultSizes = ["8", "16", "24", "48", "64"];
     const selection = getFilteredSelection();
     if (selection.length === 0) {
-        result.setError("Select at least one frame or component first");
+        result.setError("⚠️ Select at least one frame or component first");
         return;
     }
     // Check the input is valid
     const integer = parseInt(query);
     if (query !== "" && (isNaN(integer) || integer < 0)) {
-        result.setError("Try entering a positive number");
+        result.setError("⚠️ Try entering a positive number");
         return;
     }
     const suggestions = query === "" || defaultSizes.includes(query)
@@ -25,8 +25,13 @@ figma.on("run", ({ parameters }) => {
     }
 });
 function startPluginWithParameters(parameters) {
-    const offset = parseInt(parameters["offset"]);
     const selection = getFilteredSelection();
+    if (selection.length === 0) {
+        figma.notify("⚠️ Select at least one frame or component first");
+        figma.closePlugin();
+        return;
+    }
+    const offset = parseInt(parameters["offset"]);
     selection.forEach((item) => {
         resizeWithOffset(item, offset);
     });

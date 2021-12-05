@@ -7,14 +7,14 @@ figma.parameters.on("input", ({ query, result }: ParameterInputEvent) => {
     const selection = getFilteredSelection()
 
     if (selection.length === 0) {
-        result.setError("Select at least one frame or component first")
+        result.setError("⚠️ Select at least one frame or component first")
         return
     }
 
     // Check the input is valid
     const integer = parseInt(query)
     if (query !== "" && (isNaN(integer) || integer < 0)) {
-        result.setError("Try entering a positive number")
+        result.setError("⚠️ Try entering a positive number")
         return
     }
 
@@ -34,9 +34,14 @@ figma.on("run", ({ parameters }: RunEvent) => {
 })
 
 function startPluginWithParameters(parameters: ParameterValues) {
-    const offset = parseInt(parameters["offset"])
-
     const selection = getFilteredSelection()
+    if (selection.length === 0) {
+        figma.notify("⚠️ Select at least one frame or component first")
+        figma.closePlugin()
+        return
+    }
+
+    const offset = parseInt(parameters["offset"])
 
     selection.forEach((item) => {
         resizeWithOffset(item, offset)
