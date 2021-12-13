@@ -3,7 +3,6 @@
 // The 'input' event listens for text change in the Quick Actions box after a plugin is 'Tabbed' into.
 figma.parameters.on("input", ({ query, result }: ParameterInputEvent) => {
     const defaultSizes = ["8", "16", "24", "48", "64"]
-
     const selection = getFilteredSelection()
 
     if (selection.length === 0) {
@@ -34,6 +33,8 @@ figma.on("run", ({ parameters }: RunEvent) => {
 })
 
 function startPluginWithParameters(parameters: ParameterValues) {
+    const start = Date.now()
+
     const selection = getFilteredSelection()
 
     if (selection.length === 0) {
@@ -53,6 +54,7 @@ function startPluginWithParameters(parameters: ParameterValues) {
     } else {
         figma.notify(`${selection.length} layers resized`)
     }
+    console.log(Date.now() - start)
 
     // Make sure to close the plugin when you're done. Otherwise the plugin will
     // keep running, which shows the cancel button at the bottom of the screen.
@@ -78,7 +80,7 @@ function resizeWithOffset(parent, offset, offsetHor) {
 
     if (parent.layoutMode === "NONE") {
 
-        let bounds = getBoundingRect(children)
+        let bounds = getBounds(children)
 
         // Move and resize parent
         parent.x = parent.x + bounds.x - offsetHor
@@ -101,38 +103,41 @@ function resizeWithOffset(parent, offset, offsetHor) {
     }
 }
 
-function applyMatrixToPoint(matrix: number[][], point: number[]) {
-    return [
-        point[0] * matrix[0][0] + point[1] * matrix[0][1] + matrix[0][2],
-        point[0] * matrix[1][0] + point[1] * matrix[1][1] + matrix[1][2]
-    ]
-}
+function getBounds(nodes: SceneNode[]) {
 
-function getBoundingRect(nodes: SceneNode[]) {
-    const boundingRect = {
-        x: 0,
-        y: 0,
-        x2: 0,
-        y2: 0,
-        height: 0,
-        width: 0
+    const bounds = {
+        x: 0, y: 0, x2: 0, y2: 0, width: 0, height: 0
+    }
+
+    function applyMatrixToPoint(matrix: number[][], point: number[]) {
+        return [
+            point[0] * matrix[0][0] + point[1] * matrix[0][1] + matrix[0][2],
+            point[0] * matrix[1][0] + point[1] * matrix[1][1] + matrix[1][2]
+        ]
     }
 
     if (nodes.length) {
         const xy = nodes.reduce(
             (rez, node) => {
+                // If object doesn't support relative Transform
                 if (!node.relativeTransform) {
                     console.warn(
                         'Provided node haven\'t "relativeTransform" property, but it\'s required for calculations.'
                     )
                     return rez
                 }
+                // If object has no height or width
                 if (node.height === undefined || node.width === undefined) {
                     console.warn(
                         'Provided node haven\'t "width/height" property, but it\'s required for calculations.'
                     )
                     return rez
                 }
+
+                // If object has no transform
+                if (node.relativeTransform === [[1, 0, 0], [0, 1, 0]])
+                    return rez
+
                 const halfHeight = node.height / 2
                 const halfWidth = node.width / 2
 
@@ -170,100 +175,13 @@ function getBoundingRect(nodes: SceneNode[]) {
             { x: [], y: [], x2: [], y2: [] }
         )
 
-        const rect = {
-            x: Math.min(...xy.x),
-            y: Math.min(...xy.y),
-            x2: Math.max(...xy.x2),
-            y2: Math.max(...xy.y2)
-        }
-
-        boundingRect.x = rect.x
-        boundingRect.y = rect.y
-        boundingRect.x2 = rect.x2
-        boundingRect.y2 = rect.y2
-        boundingRect.width = rect.x2 - rect.x
-        boundingRect.height = rect.y2 - rect.y
+        bounds.x = Math.min(...xy.x)
+        bounds.y = Math.min(...xy.y)
+        bounds.x2 = Math.max(...xy.x2)
+        bounds.y2 = Math.max(...xy.y2)
+        bounds.width = bounds.x2 - bounds.x
+        bounds.height = bounds.y2 - bounds.y
     }
 
-    return boundingRect
-}
-
-function getBoundingRect2(nodes: SceneNode[]) {
-    const boundingRect = {
-        x: 0,
-        y: 0,
-        x2: 0,
-        y2: 0,
-        height: 0,
-        width: 0
-    }
-
-    if (nodes.length) {
-        const xy = nodes.reduce(
-            (rez, node) => {
-                if (!node.relativeTransform) {
-                    console.warn(
-                        'Provided node haven\'t "relativeTransform" property, but it\'s required for calculations.'
-                    )
-                    return rez
-                }
-                if (node.height === undefined || node.width === undefined) {
-                    console.warn(
-                        'Provided node haven\'t "width/height" property, but it\'s required for calculations.'
-                    )
-                    return rez
-                }
-                const halfHeight = node.height / 2
-                const halfWidth = node.width / 2
-
-                const [[c0, s0, x], [s1, c1, y]] = node.relativeTransform
-                const matrix = [
-                    [c0, s0, x + halfWidth * c0 + halfHeight * s0],
-                    [s1, c1, y + halfWidth * s1 + halfHeight * c1]
-                ]
-
-                // the coordinates of the corners of the rectangle
-                const XY = {
-                    x: [1, -1, 1, -1],
-                    y: [1, -1, -1, 1]
-                }
-
-                // fill in
-                for (let i = 0; i <= 3; i++) {
-                    const a = applyMatrixToPoint(matrix, [
-                        XY.x[i] * halfWidth,
-                        XY.y[i] * halfHeight
-                    ])
-                    XY.x[i] = a[0]
-                    XY.y[i] = a[1]
-                }
-
-                XY.x.sort((a, b) => a - b)
-                XY.y.sort((a, b) => a - b)
-
-                rez.x.push(XY.x[0])
-                rez.y.push(XY.y[0])
-                rez.x2.push(XY.x[3])
-                rez.y2.push(XY.y[3])
-                return rez
-            },
-            { x: [], y: [], x2: [], y2: [] }
-        )
-
-        const rect = {
-            x: Math.min(...xy.x),
-            y: Math.min(...xy.y),
-            x2: Math.max(...xy.x2),
-            y2: Math.max(...xy.y2)
-        }
-
-        boundingRect.x = rect.x
-        boundingRect.y = rect.y
-        boundingRect.x2 = rect.x2
-        boundingRect.y2 = rect.y2
-        boundingRect.width = rect.x2 - rect.x
-        boundingRect.height = rect.y2 - rect.y
-    }
-
-    return boundingRect
+    return bounds
 }
