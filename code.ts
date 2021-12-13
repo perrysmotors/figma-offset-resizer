@@ -33,8 +33,6 @@ figma.on("run", ({ parameters }: RunEvent) => {
 })
 
 function startPluginWithParameters(parameters: ParameterValues) {
-    const start = Date.now()
-
     const selection = getFilteredSelection()
 
     if (selection.length === 0) {
@@ -54,7 +52,6 @@ function startPluginWithParameters(parameters: ParameterValues) {
     } else {
         figma.notify(`${selection.length} layers resized`)
     }
-    console.log(Date.now() - start)
 
     // Make sure to close the plugin when you're done. Otherwise the plugin will
     // keep running, which shows the cancel button at the bottom of the screen.
