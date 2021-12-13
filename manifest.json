@@ -6,13 +6,20 @@
   "editorType": [
     "figma"
   ],
-      "parameterOnly": true,
-      "parameters": [
-        {
-          "name": "Offset",
-          "key": "offset",
-          "description": "Enter the offset in pixels",
-          "allowFreeform": false
-        }
-      ]
+  "parameterOnly": true,
+  "parameters": [
+    {
+      "name": "Offset",
+      "key": "offset",
+      "description": "Enter the offset in pixels",
+      "allowFreeform": false
+    },
+    {
+      "name": "Horizontal offset",
+      "key": "offsetHor",
+      "description": "Enter the horizontal offset (optional)",
+      "allowFreeform": false,
+      "optional": true
+    }
+  ]
 }

@@ -1,3 +1,5 @@
+
+
 // This plugin resizes frames or component to a fixed offset from their contents.
 
 // The 'input' event listens for text change in the Quick Actions box after a plugin is 'Tabbed' into.
@@ -42,9 +44,10 @@ function startPluginWithParameters(parameters: ParameterValues) {
     }
 
     const offset = parseInt(parameters["offset"])
+    const offsetHor = parseInt(parameters["offsetHor"])
 
     selection.forEach((item) => {
-        resizeWithOffset(item, offset)
+        resizeWithOffset(item, offset, offsetHor)
     })
     if (selection.length === 1) {
         figma.notify("1 layer resized")
@@ -67,9 +70,11 @@ function getFilteredSelection() {
     )
 }
 
-function resizeWithOffset(parent, offset) {
-    const children = parent.children
+function resizeWithOffset(parent, offset, offsetHor) {
+    // If offsetHor not given
+    if (isNaN(offsetHor)) offsetHor = offset
 
+    const children = parent.children
     if (children.length === 0) return
 
     if (parent.layoutMode === "NONE") {
@@ -86,20 +91,21 @@ function resizeWithOffset(parent, offset) {
         const height = bottomRigthY - topLeftY
 
         // Move and resize parent
-        parent.x = parent.x + topLeftX - offset
+        parent.x = parent.x + topLeftX - offsetHor
         parent.y = parent.y + topLeftY - offset
-        parent.resizeWithoutConstraints(width + offset * 2, height + offset * 2)
+        parent.resizeWithoutConstraints(width + offsetHor * 2, height + offset * 2)
 
         // Children move with parent, so they need to be moved back
         children.forEach((child) => {
-            child.x = child.x - topLeftX + offset
+            child.x = child.x - topLeftX + offsetHor
             child.y = child.y - topLeftY + offset
         })
     } else {
-        parent.x = parent.x + parent.paddingLeft - offset
+        // If we have auto-layout
+        parent.x = parent.x + parent.paddingLeft - offsetHor
         parent.y = parent.y + parent.paddingTop - offset
-        parent.paddingLeft = offset
-        parent.paddingRight = offset
+        parent.paddingLeft = offsetHor
+        parent.paddingRight = offsetHor
         parent.paddingTop = offset
         parent.paddingBottom = offset
     }
