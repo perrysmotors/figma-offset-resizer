@@ -6,13 +6,20 @@
   "editorType": [
     "figma"
   ],
-      "parameterOnly": true,
-      "parameters": [
-        {
-          "name": "Offset",
-          "key": "offset",
-          "description": "Enter the offset in pixels",
-          "allowFreeform": false
-        }
-      ]
+  "parameterOnly": true,
+  "parameters": [
+    {
+      "name": "Offset",
+      "key": "offset",
+      "description": "Enter the offset in pixels",
+      "allowFreeform": false
+    },
+    {
+      "name": "Margin left & right",
+      "key": "offsetHor",
+      "description": "Set the left and right margin separately",
+      "allowFreeform": false,
+      "optional": true
+    }
+  ]
 }
