@@ -15,9 +15,9 @@
       "allowFreeform": false
     },
     {
-      "name": "Horizontal offset",
+      "name": "Margin left & right",
       "key": "offsetHor",
-      "description": "Enter the horizontal offset (optional)",
+      "description": "Set the left and right margin separately",
       "allowFreeform": false,
       "optional": true
     }
