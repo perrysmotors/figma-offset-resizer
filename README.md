@@ -22,4 +22,4 @@ Offset Resizer is keyboard operated:
 
 ***
 
-Many thanks to [Nick Denisow](https://www.figma.com/@qurle) for his help on the latest update.
+Many thanks to [Nick Qurle](https://www.figma.com/@qurle) for his help on the latest update.
