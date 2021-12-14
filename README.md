@@ -10,7 +10,7 @@ Offset Resizer is keyboard operated:
 
 **→** Select the frame (or frames) you want to resize.
 
-**→** Type `⌘` + `/` to open Figma’s quick actions search bar (or `CRTL` + `/` if you are on Windows).
+**→** Type `⌘` + `/` to open Figma’s quick actions search bar (or `Ctrl` + `/` if you are on Windows).
 
 **→** Start typing “Offset” to search for and run the plugin.
 
