@@ -2,7 +2,7 @@
 
 // The 'input' event listens for text change in the Quick Actions box after a plugin is 'Tabbed' into.
 figma.parameters.on("input", ({ query, result }: ParameterInputEvent) => {
-    const defaultSizes = ["8", "16", "24", "48", "64"]
+    const defaults = ["8", "16", "24", "48", "64"]
     const selection = getFilteredSelection()
 
     if (selection.length === 0) {
@@ -11,18 +11,21 @@ figma.parameters.on("input", ({ query, result }: ParameterInputEvent) => {
     }
 
     // Check the input is valid
-    const integer = parseInt(query)
-    if (query !== "" && (isNaN(integer) || integer < 0)) {
+    const number = Number(query)
+    if (!Number.isInteger(number) || number < 0) {
         result.setError("⚠️ Try entering a positive number")
         return
     }
 
-    const suggestions =
-        query === "" || defaultSizes.includes(query)
-            ? defaultSizes
-            : [query, ...defaultSizes]
+    const suggestions = (
+        query === "" || defaults.includes(query)
+            ? defaults
+            : [query, ...defaults]
+    ) // default values plus the typed value
+        .filter((s) => s.includes(query)) // just values matching the typed value
+        .map((value) => ({ name: value, data: Number(value) })) // include the numerical value with the suggestions
 
-    result.setSuggestions(suggestions.filter((s) => s.includes(query)))
+    result.setSuggestions(suggestions)
 })
 
 // When the user presses Enter after inputting all parameters, the 'run' event is fired.
@@ -35,12 +38,14 @@ function startPluginWithParameters(parameters: ParameterValues): string {
     const selection = getFilteredSelection()
 
     if (selection.length === 0) {
-        figma.notify("⚠️ Select at least one frame or component first", { error: true })
+        figma.notify("⚠️ Select at least one frame or component first", {
+            error: true,
+        })
         return ""
     }
 
-    const offset = parseInt(parameters["offset"])
-    const offsetHor = parseInt(parameters["offsetHor"])
+    const offset = parameters["offset"]
+    const offsetHor = parameters["offsetHor"]
 
     selection.forEach((item) => {
         resizeWithOffset(item, offset, offsetHor)
