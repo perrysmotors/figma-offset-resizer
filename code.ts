@@ -27,18 +27,16 @@ figma.parameters.on("input", ({ query, result }: ParameterInputEvent) => {
 
 // When the user presses Enter after inputting all parameters, the 'run' event is fired.
 figma.on("run", ({ parameters }: RunEvent) => {
-    if (parameters) {
-        startPluginWithParameters(parameters)
-    }
+    const closeMessage = startPluginWithParameters(parameters)
+    figma.closePlugin(closeMessage)
 })
 
-function startPluginWithParameters(parameters: ParameterValues) {
+function startPluginWithParameters(parameters: ParameterValues): string {
     const selection = getFilteredSelection()
 
     if (selection.length === 0) {
-        figma.notify("⚠️ Select at least one frame or component first")
-        figma.closePlugin()
-        return
+        figma.notify("⚠️ Select at least one frame or component first", { error: true })
+        return ""
     }
 
     const offset = parseInt(parameters["offset"])
@@ -48,14 +46,10 @@ function startPluginWithParameters(parameters: ParameterValues) {
         resizeWithOffset(item, offset, offsetHor)
     })
     if (selection.length === 1) {
-        figma.notify("1 layer resized")
+        return "1 layer resized"
     } else {
-        figma.notify(`${selection.length} layers resized`)
+        return `${selection.length} layers resized`
     }
-
-    // Make sure to close the plugin when you're done. Otherwise the plugin will
-    // keep running, which shows the cancel button at the bottom of the screen.
-    figma.closePlugin()
 }
 
 function getFilteredSelection() {
@@ -76,13 +70,15 @@ function resizeWithOffset(parent, offset, offsetHor) {
     if (children.length === 0) return
 
     if (parent.layoutMode === "NONE") {
-
         let bounds = getBounds(children)
 
         // Move and resize parent
         parent.x = parent.x + bounds.x - offsetHor
         parent.y = parent.y + bounds.y - offset
-        parent.resizeWithoutConstraints(bounds.width + offsetHor * 2, bounds.height + offset * 2)
+        parent.resizeWithoutConstraints(
+            bounds.width + offsetHor * 2,
+            bounds.height + offset * 2
+        )
 
         // Children move with parent, so they need to be moved back
         children.forEach((child) => {
@@ -101,15 +97,19 @@ function resizeWithOffset(parent, offset, offsetHor) {
 }
 
 function getBounds(nodes: SceneNode[]) {
-
     const bounds = {
-        x: 0, y: 0, x2: 0, y2: 0, width: 0, height: 0
+        x: 0,
+        y: 0,
+        x2: 0,
+        y2: 0,
+        width: 0,
+        height: 0,
     }
 
     function applyMatrixToPoint(matrix: number[][], point: number[]) {
         return [
             point[0] * matrix[0][0] + point[1] * matrix[0][1] + matrix[0][2],
-            point[0] * matrix[1][0] + point[1] * matrix[1][1] + matrix[1][2]
+            point[0] * matrix[1][0] + point[1] * matrix[1][1] + matrix[1][2],
         ]
     }
 
@@ -119,20 +119,26 @@ function getBounds(nodes: SceneNode[]) {
                 // If object doesn't support relative Transform
                 if (!node.relativeTransform) {
                     console.warn(
-                        'Provided node haven\'t "relativeTransform" property, but it\'s required for calculations.'
+                        "Provided node haven't \"relativeTransform\" property, but it's required for calculations."
                     )
                     return rez
                 }
                 // If object has no height or width
                 if (node.height === undefined || node.width === undefined) {
                     console.warn(
-                        'Provided node haven\'t "width/height" property, but it\'s required for calculations.'
+                        "Provided node haven't \"width/height\" property, but it's required for calculations."
                     )
                     return rez
                 }
 
                 // If object has no transform
-                if (node.relativeTransform === [[1, 0, 0], [0, 1, 0]])
+                if (
+                    node.relativeTransform ===
+                    [
+                        [1, 0, 0],
+                        [0, 1, 0],
+                    ]
+                )
                     return rez
 
                 const halfHeight = node.height / 2
@@ -141,20 +147,20 @@ function getBounds(nodes: SceneNode[]) {
                 const [[c0, s0, x], [s1, c1, y]] = node.relativeTransform
                 const matrix = [
                     [c0, s0, x + halfWidth * c0 + halfHeight * s0],
-                    [s1, c1, y + halfWidth * s1 + halfHeight * c1]
+                    [s1, c1, y + halfWidth * s1 + halfHeight * c1],
                 ]
 
                 // the coordinates of the corners of the rectangle
                 const XY = {
                     x: [1, -1, 1, -1],
-                    y: [1, -1, -1, 1]
+                    y: [1, -1, -1, 1],
                 }
 
                 // fill in
                 for (let i = 0; i <= 3; i++) {
                     const a = applyMatrixToPoint(matrix, [
                         XY.x[i] * halfWidth,
-                        XY.y[i] * halfHeight
+                        XY.y[i] * halfHeight,
                     ])
                     XY.x[i] = a[0]
                     XY.y[i] = a[1]
