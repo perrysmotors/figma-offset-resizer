@@ -44,8 +44,8 @@ function startPluginWithParameters(parameters: ParameterValues): string {
         return ""
     }
 
-    const offset = parameters["offset"]
-    const offsetHor = parameters["offsetHor"]
+    const offset = Number(parameters["offset"])
+    const offsetHor = Number(parameters["offsetHor"])
 
     selection.forEach((item) => {
         resizeWithOffset(item, offset, offsetHor)
@@ -62,7 +62,8 @@ function getFilteredSelection() {
         (node) =>
             (node.type === "FRAME" ||
                 node.type === "COMPONENT" ||
-                node.type === "COMPONENT_SET") &&
+                node.type === "COMPONENT_SET" ||
+                node.type === "SECTION") &&
             node.children.length > 0
     )
 }
@@ -74,7 +75,7 @@ function resizeWithOffset(parent, offset, offsetHor) {
     const children = parent.children
     if (children.length === 0) return
 
-    if (parent.layoutMode === "NONE") {
+    if (parent.layoutMode === "NONE" || parent.layoutMode === undefined) {
         let bounds = getBounds(children)
 
         // Move and resize parent
@@ -137,13 +138,7 @@ function getBounds(nodes: SceneNode[]) {
                 }
 
                 // If object has no transform
-                if (
-                    node.relativeTransform ===
-                    [
-                        [1, 0, 0],
-                        [0, 1, 0],
-                    ]
-                )
+                if (JSON.stringify(node.relativeTransform) === JSON.stringify([[1, 0, 0], [0, 1, 0],]))
                     return rez
 
                 const halfHeight = node.height / 2
