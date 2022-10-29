@@ -1,6 +1,6 @@
 {
   "name": "offset-resizer",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "description": "Offset frames, components and component sets by a uniform distance from their contents.",
   "main": "code.js",
   "scripts": {
