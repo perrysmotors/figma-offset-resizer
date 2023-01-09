@@ -137,10 +137,6 @@ function getBounds(nodes: SceneNode[]) {
                     return rez
                 }
 
-                // If object has no transform
-                if (JSON.stringify(node.relativeTransform) === JSON.stringify([[1, 0, 0], [0, 1, 0],]))
-                    return rez
-
                 const halfHeight = node.height / 2
                 const halfWidth = node.width / 2
 
